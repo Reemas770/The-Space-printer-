@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع الطباعة الفضائية</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('https://www.almrsal.com/wp-content/uploads/2019/04/%D8%A7%D9%84%D9%86%D8%B8%D8%A7%D9%85-%D8%A7%D9%84%D8%B4%D9%85%D8%B3%D9%8A.jpg?x23329');
+            background-size: cover;
+            color: white;
+            direction: rtl;
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 30px; 
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 400px; 
+            text-align: center;
+        }
+        .status {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin-bottom: 15px; 
+            border-radius: 5px;
+            font-size: 20px; 
+        }
+        .green-box {
+            background-color: green;
+            color: white;
+            padding: 20px; 
+            margin-bottom: 15px; 
+            border-radius: 5px;
+            font-size: 20px; 
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            cursor: pointer;
+            width: 100px;
+            border: none;
+            border-radius: 5px;
+            background-color: #444;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #666;
+        }
+        .hidden {
+            display: none;
+        }
+        .canvas {
+            border: 1px solid #ccc;
+            width: 100%;
+            height: 200px;
+            background-color: white; /* خلفية الرسم باللون الأبيض */
+        }
+        .finished-box {
+            background-color: rgba(50, 50, 50, 0.9); 
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div id="startContainer">
+        <div class="status">اهلاً بك في الطابعه الفضائيه</div>
+        <div class="green-box">
+            كمية المعدن الموجوده (حديد 30% - نحاس 45% - فضه 10% - ذهب 5% - فسفور 10%)
+        </div>
+        <div id="startButtonContainer">
+            <button onclick="start()">ابدأ</button>
+        </div>
+    </div>
+
+    <div id="selectionContainer" class="hidden">
+        <div class="status">ماذا تريد ان تطبع؟</div>
+        <button onclick="selectItem('مسمار')">مسمار</button>
+        <button onclick="selectItem('مطرقه')">مطرقه</button>
+        <button onclick="selectItem('سلك')">سلك</button>
+        <button onclick="selectItem('منظار')">منظار</button>
+        <button onclick="selectItem('أخرى')">أخرى</button>
+    </div>
+
+    <div id="sizeContainer" class="hidden">
+        <div class="status" id="sizeStatus"></div>
+        <div class="size-options" id="sizeOptions"></div>
+    </div>
+
+    <div id="finalContainer" class="hidden">
+        <div class="status">نسبة المعدن الذي ستحتاجه:</div>
+        <div class="status">75%</div>
+        <div class="action-buttons">
+            <button onclick="goToSelection()">تعديل</button>
+            <button onclick="startPrinting()">اطبع</button>
+        </div>
+    </div>
+
+    <div id="printingContainer" class="hidden">
+        <div class="status" style="font-size: 22px; padding: 40px;">جاري الطباعه...</div>
+    </div>
+
+    <div id="endContainer" class="hidden">
+        <div class="status" style="font-size: 22px; padding: 40px;">تم الانتهاء من الطباعه، يمكنك الان استلام ما طبعت</div>
+        <div class="finished-box">
+            <button onclick="goToStart()">تم الانتهاء</button>
+        </div>
+    </div>
+
+    <div id="otherContainer" class="hidden">
+        <div class="status">ارسم ما تريد طباعته</div>
+        <canvas id="canvas" class="canvas"></canvas>
+        <div class="action-buttons">
+            <button onclick="confirmDrawing()">اطبع</button>
+            <button onclick="goBack('selectionContainer')">رجوع</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+
+    function startPosition(e) {
+        painting = true;
+        draw(e);
+    }
+    function endPosition() {
+        painting = false;
+        ctx.beginPath();
+    }
+    function draw(e) {
+        if (!painting) return;
+
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = 'black';
+
+        ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+    }
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    function start() {
+        document.getElementById('startContainer').classList.add('hidden');
+        document.getElementById('selectionContainer').classList.remove('hidden');
+    }
+
+    function selectItem(item) {
+        document.getElementById('selectionContainer').classList.add('hidden');
+        let sizeOptions = document.getElementById('sizeOptions');
+        let sizeStatus = document.getElementById('sizeStatus');
+        sizeOptions.innerHTML = '';
+        sizeStatus.innerText = "الحجم-نسبة استهلاك المعادن";
+
+        if (item === 'مسمار') {
+            sizeOptions.innerHTML += `
+                <button onclick="printItem('3 سم', '5%')">3 سم - 5%</button>
+                <button onclick="printItem('5 سم', '8%')">5 سم - 8%</button>
+                <button onclick="printItem('7 سم', '12%')">7 سم - 12%</button>
+            `;
+        } else if (item === 'مطرقه') {
+            sizeOptions.innerHTML += `
+                <button onclick="printItem('1 كجم', '10%')">1 كجم - 10%</button>
+                <button onclick="printItem('1.5 كجم', '20%')">1.5 كجم - 20%</button>
+                <button onclick="printItem('2 كجم', '30%')">2 كجم - 30%</button>
+            `;
+        } else if (item === 'سلك') {
+            sizeOptions.innerHTML += `
+                <button onclick="printItem('1 سم', '0.5%')">0.5 سم - 1%</button>
+                <button onclick="printItem('1.5 سم', '1%')">1 سم - 1.5%</button>
+                <button onclick="printItem('2 سم', '1.5%')">1.5 سم - 2%</button>
+            `;
+        } else if (item === 'منظار') {
+            sizeOptions.innerHTML += `
+                <button onclick="printItem('1 كجم', '15%')">1 كجم - 15%</button>
+                <button onclick="printItem('2 كجم', '25%')">2 كجم - 25%</button>
+                <button onclick="printItem('3 كجم', '35%')">3 كجم - 35%</button>
+            `;
+        } else if (item === 'أخرى') {
+            document.getElementById('otherContainer').classList.remove('hidden');
+            return;
+        }
+
+        document.getElementById('sizeContainer').classList.remove('hidden');
+    }
+
+    function printItem(size, percentage) {
+        document.getElementById('sizeContainer').classList.add('hidden');
+        document.getElementById('printingContainer').classList.remove('hidden');
+
+        setTimeout(() => {
+            document.getElementById('printingContainer').classList.add('hidden');
+            document.getElementById('endContainer').classList.remove('hidden');
+        }, 1500);
+    }
+
+    function confirmDrawing() {
+        document.getElementById('otherContainer').classList.add('hidden');
+        document.getElementById('printingContainer').classList.remove('hidden');
+
+        setTimeout(() => {
+            document.getElementById('printingContainer').classList.add('hidden');
+            document.getElementById('endContainer').classList.remove('hidden');
+        }, 1500);
+    }
+
+    function goBack(containerId) {
+        document.getElementById('otherContainer').classList.add('hidden');
+        document.getElementById('selectionContainer').classList.remove('hidden');
+    }
+    function goToSelection() {
+        document.getElementById('finalContainer').classList.add('hidden');
+        document.getElementById('selectionContainer').classList.remove('hidden');
+    }
+
+    function startPrinting() {
+        document.getElementById('finalContainer').classList.add('hidden');
+        document.getElementById('printingContainer').classList.remove('hidden');
+
+        setTimeout(() => {
+            document.getElementById('printingContainer').classList.add('hidden');
+            document.getElementById('endContainer').classList.remove('hidden');
+        }, 1500);
+    }
+
+    function goToStart() {
+        document.getElementById('endContainer').classList.add('hidden');
+        document.getElementById('startContainer').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
